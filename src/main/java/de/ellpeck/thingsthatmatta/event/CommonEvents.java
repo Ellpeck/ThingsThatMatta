@@ -1,11 +1,19 @@
 package de.ellpeck.thingsthatmatta.event;
 
 import de.ellpeck.thingsthatmatta.ThingsThatMatta;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+
+import java.util.Random;
 
 public class CommonEvents{
 
@@ -50,4 +58,50 @@ public class CommonEvents{
         }
     }
 
+    @SubscribeEvent
+    public void onLivingDeath(LivingDeathEvent event){
+        EntityLivingBase living = event.getEntityLiving();
+        World world = living.getEntityWorld();
+
+        if(!world.isRemote && living instanceof EntityPlayer){
+            moveSpawnPoint(world);
+        }
+    }
+
+    private static void moveSpawnPoint(World world){
+        if(ThingsThatMatta.spawnResetRange > 0){
+            BiomeProvider provider = world.provider.getBiomeProvider();
+            Random rand = new Random(world.getSeed());
+
+            BlockPos oldSpawn = world.getSpawnPoint();
+            BlockPos pos = provider.findBiomePosition(oldSpawn.getX(), oldSpawn.getZ(), ThingsThatMatta.spawnResetRange, provider.getBiomesToSpawnIn(), rand);
+
+            int x;
+            int z;
+
+            if(pos != null){
+                x = pos.getX();
+                z = pos.getZ();
+            }
+            else{
+                x = oldSpawn.getX()+MathHelper.getInt(rand, -ThingsThatMatta.spawnResetRange, ThingsThatMatta.spawnResetRange);
+                z = oldSpawn.getZ()+MathHelper.getInt(rand, -ThingsThatMatta.spawnResetRange, ThingsThatMatta.spawnResetRange);
+            }
+
+            for(int i = 0; i < 1000; i++){
+                if(!world.provider.canCoordinateBeSpawn(x, z)){
+                    x += rand.nextInt(64)-rand.nextInt(64);
+                    z += rand.nextInt(64)-rand.nextInt(64);
+                }
+                else{
+                    break;
+                }
+            }
+
+            BlockPos newSpawn = new BlockPos(x, world.provider.getAverageGroundLevel(), z);
+            world.getWorldInfo().setSpawn(newSpawn);
+
+            ThingsThatMatta.LOGGER.info("Moved Spawn Point from {}, {}, {} to {}, {}, {}.", oldSpawn.getX(), oldSpawn.getY(), oldSpawn.getZ(), newSpawn.getX(), newSpawn.getY(), newSpawn.getZ());
+        }
+    }
 }
