@@ -13,17 +13,18 @@ public class ClientEvents{
 
     @SubscribeEvent
     public void onDebugScreen(RenderGameOverlayEvent.Text event){
-        List<String> left = event.getLeft();
+        for(int side = 0; side < 2; side++){
+            List<String> list = side == 0 ? event.getLeft() : event.getRight();
+            for(int i = 0; i < list.size(); i++){
+                String s = list.get(i);
+                if(s != null && !s.isEmpty()){
+                    for(String start : ThingsThatMatta.debugHideKeys){
+                        if(s.startsWith(start)){
+                            list.remove(i);
+                            i--;
 
-        for(int i = 0; i < left.size(); i++){
-            String s = left.get(i);
-            if(s != null && !s.isEmpty()){
-                for(String start : ThingsThatMatta.debugHideKeys){
-                    if(s.startsWith(start)){
-                        left.remove(i);
-                        i--;
-
-                        break;
+                            break;
+                        }
                     }
                 }
             }
