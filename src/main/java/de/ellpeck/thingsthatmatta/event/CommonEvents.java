@@ -1,9 +1,12 @@
 package de.ellpeck.thingsthatmatta.event;
 
 import de.ellpeck.thingsthatmatta.ThingsThatMatta;
+import de.ellpeck.thingsthatmatta.packet.PacketHandler;
+import de.ellpeck.thingsthatmatta.packet.PacketSyncConfig;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -16,8 +19,10 @@ import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class CommonEvents{
@@ -88,6 +93,19 @@ public class CommonEvents{
             Entity entity = event.getEntity();
             if(entity instanceof EntityPlayer){
                 entity.getDataManager().register(PLAYER_BED_POS, BlockPos.ORIGIN);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onLogin(PlayerLoggedInEvent event){
+        if(ThingsThatMatta.syncConfigToClients){
+            EntityPlayer player = event.player;
+            if(player instanceof EntityPlayerMP && !player.world.isRemote){
+                PacketSyncConfig packet = new PacketSyncConfig(ThingsThatMatta.debugHideKeys);
+                PacketHandler.wrapper.sendTo(packet, (EntityPlayerMP)player);
+
+                ThingsThatMatta.LOGGER.info("Sending debugHideKeys config "+Arrays.toString(ThingsThatMatta.debugHideKeys)+" to player "+player.getName()+".");
             }
         }
     }

@@ -1,6 +1,7 @@
 package de.ellpeck.thingsthatmatta;
 
 import de.ellpeck.thingsthatmatta.event.CommonEvents;
+import de.ellpeck.thingsthatmatta.packet.PacketHandler;
 import de.ellpeck.thingsthatmatta.proxy.IProxy;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
@@ -48,6 +49,7 @@ public class ThingsThatMatta{
     public static float sleepHealAmountPerTick;
     public static int spawnResetRange;
     public static boolean compassPointsToBedSpawn;
+    public static boolean syncConfigToClients;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -55,6 +57,7 @@ public class ThingsThatMatta{
         config.load();
         defineConfigs();
 
+        PacketHandler.init();
         MinecraftForge.EVENT_BUS.register(new CommonEvents());
 
         proxy.preInit(event);
@@ -73,6 +76,7 @@ public class ThingsThatMatta{
         sleepHealAmountPerTick = config.getFloat("sleepHealAmount", Configuration.CATEGORY_GENERAL, 0.01F, 0F, 100F, "The amount of health points that is regenerated when a player sleeps in bed per tick, this is tracked based on the world time the player goes to bed until the world time the player wakes up at. Set to 0 to disable");
         spawnResetRange = config.getInt("spawnResetRange", Configuration.CATEGORY_GENERAL, 2000, 0, 1000000, "The amount of blocks that spawn gets moved every time a player dies. Set to 0 to disable");
         compassPointsToBedSpawn = config.getBoolean("compassPointsToBedSpawn", Configuration.CATEGORY_GENERAL, true, "If the compass should point to the last bed that you slept in instead of the world spawn");
+        syncConfigToClients = config.getBoolean("syncConfigToClients", Configuration.CATEGORY_GENERAL, true, "If the configuration on the server should be synced to the client (only syncs configs that execute client-based behavior)");
 
         if(config.hasChanged()){
             config.save();
