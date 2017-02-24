@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'idea'
 
-version = "1.10.2-r6"
+version = "1.10.2-r1"
 group = "de.ellpeck.thingsthatmatta"
 archivesBaseName = "ThingsThatMatta"
 
@@ -26,7 +26,7 @@ minecraft {
     makeObfSourceJar = false
     //useDepAts = true
 
-    replaceIn "SimpleProtection.java"
+    replaceIn "ThingsThatMatta.java"
     replace "@VERSION@", project.version.toString()
 }
 

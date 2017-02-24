@@ -1,0 +1,19 @@
+[
+{
+  "modid": "thingsthatmatta",
+  "name": "ThingsThatMatta",
+  "description": "A mod that adds things that do stuff",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "http://github.com/Ellpeck/ThingsThatMatta",
+  "updateUrl": "",
+  "authorList": [ "Ellpeck" ],
+  "credits": "Author: Ellpeck",
+  "logoFile": "",
+  "screenshots": [
+  ],
+  "parent":"",
+  "dependencies": [
+  ]
+}
+]
