@@ -1,13 +1,18 @@
 package de.ellpeck.thingsthatmatta.event;
 
 import de.ellpeck.thingsthatmatta.ThingsThatMatta;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeProvider;
+import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -16,6 +21,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import java.util.Random;
 
 public class CommonEvents{
+
+    public static final DataParameter<BlockPos> PLAYER_BED_POS = EntityDataManager.createKey(EntityPlayer.class, DataSerializers.BLOCK_POS);
 
     @SubscribeEvent
     public void onConfigurationChangedEvent(OnConfigChangedEvent event){
@@ -35,25 +42,32 @@ public class CommonEvents{
                 }
             }
 
-            if(ThingsThatMatta.sleepHealAmountPerTick > 0F){
-                NBTTagCompound data = player.getEntityData();
+            String tagName = ThingsThatMatta.MOD_ID+"StartSleepTime";
+            NBTTagCompound data = player.getEntityData();
 
-                int currTime = (int)player.world.getWorldTime();
-                boolean isSleeping = player.isPlayerSleeping();
-                int startSleepTime = data.getInteger("StartSleepTime");
+            int currTime = (int)player.world.getWorldTime();
+            boolean isSleeping = player.isPlayerSleeping();
+            int startSleepTime = data.getInteger(tagName);
 
-                if(startSleepTime <= 0 && isSleeping){
-                    data.setInteger("StartSleepTime", currTime);
+            if(startSleepTime <= 0 && isSleeping){
+                data.setInteger(tagName, currTime);
+
+                if(ThingsThatMatta.compassPointsToBedSpawn){
+                    if(player.bedLocation != null){
+                        player.getDataManager().set(PLAYER_BED_POS, player.bedLocation);
+                    }
                 }
-                else if(startSleepTime > 0 && !isSleeping){
+            }
+            else if(startSleepTime > 0 && !isSleeping){
+                if(ThingsThatMatta.sleepHealAmountPerTick > 0F){
                     float sleepAmount = currTime-startSleepTime;
                     float healAmount = ThingsThatMatta.sleepHealAmountPerTick*sleepAmount;
                     if(healAmount > 0){
                         player.heal(healAmount);
                     }
-
-                    data.removeTag("StartSleepTime");
                 }
+
+                data.removeTag(tagName);
             }
         }
     }
@@ -65,6 +79,16 @@ public class CommonEvents{
 
         if(!world.isRemote && living instanceof EntityPlayer){
             moveSpawnPoint(world);
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityInit(EntityConstructing event){
+        if(ThingsThatMatta.compassPointsToBedSpawn){
+            Entity entity = event.getEntity();
+            if(entity instanceof EntityPlayer){
+                entity.getDataManager().register(PLAYER_BED_POS, BlockPos.ORIGIN);
+            }
         }
     }
 
