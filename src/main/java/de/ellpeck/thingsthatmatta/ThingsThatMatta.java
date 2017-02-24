@@ -25,6 +25,7 @@ public class ThingsThatMatta{
     private static final String[] DEFAULT_DEBUG_HIDE_KEYS = new String[]{"MultiplayerChunkCache:", "XYZ:", "Block:", "Chunk:", "Facing:", "Biome:", "Light:", "Local Difficulty:", "Looking at:"};
     public static String[] debugHideKeys;
     public static boolean shouldResetPlayerSpawns;
+    public static float sleepHealAmountPerTick;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event){
@@ -40,6 +41,7 @@ public class ThingsThatMatta{
     public static void defineConfigs(){
         debugHideKeys = config.getStringList("debugHideKeys", Configuration.CATEGORY_GENERAL, DEFAULT_DEBUG_HIDE_KEYS, "A list of things that text in the F3 debug menu should start with so that it gets hidden from it");
         shouldResetPlayerSpawns = config.getBoolean("unsetPlayerSpawns", Configuration.CATEGORY_GENERAL, true, "If custom spawn points set by players (ie sleeping in beds) should be removed and setting new ones should be hindered");
+        sleepHealAmountPerTick = config.getFloat("sleepHealAmount", Configuration.CATEGORY_GENERAL, 0.01F, 0F, 100F, "The amount of health points that is regenerated when a player sleeps in bed per tick, this is tracked based on the world time the player goes to bed until the world time the player wakes up at. Set to 0 to disable");
 
         if(config.hasChanged()){
             config.save();
