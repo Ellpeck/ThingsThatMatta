@@ -149,8 +149,13 @@ public class ThingsThatMatta{
 
                 if(entity instanceof EntityPlayer){
                     BlockPos bedPos = entity.getDataManager().get(CommonEvents.PLAYER_BED_POS);
-                    IBlockState state = world.getBlockState(bedPos);
-                    if(state.getBlock() instanceof BlockBed){
+                    if(world.isBlockLoaded(bedPos, false)){
+                        IBlockState state = world.getBlockState(bedPos);
+                        if(state.getBlock() instanceof BlockBed){
+                            pos = bedPos;
+                        }
+                    }
+                    else{
                         pos = bedPos;
                     }
                 }
